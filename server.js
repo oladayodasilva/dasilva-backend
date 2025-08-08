@@ -15,6 +15,20 @@ dotenv.config();
 
 const app = express();
 
+// 🌐 CORS (place BEFORE helmet for full effect)
+app.use(
+  cors({
+    origin: ['http://localhost:3000', 'https://dasilvaperfumes.com'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
+
+// ✅ Handle preflight requests for all routes
+app.options('*', cors());
+
+
 // 🔐 Security Middleware
 app.use(helmet());
 app.use(mongoSanitize());
@@ -24,15 +38,6 @@ app.use(
     max: 100, // limit each IP to 100 requests per window
     standardHeaders: true,
     legacyHeaders: false,
-  })
-);
-
-// 🌐 CORS & JSON
-app.use(express.json());
-app.use(
-  cors({
-    origin: ['http://localhost:3000', 'https://dasilvaperfumes.com'],
-    credentials: true,
   })
 );
 
