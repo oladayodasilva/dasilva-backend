@@ -9,41 +9,53 @@ import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 
 import orderRoutes from './routes/orderRoutes.js';
-import productRoutes from './routes/productRoutes.js'; // ✅ NEW: Product Routes
+import productRoutes from './routes/productRoutes.js';
 
 dotenv.config();
 
 const app = express();
 
-// 🌐 CORS (place BEFORE helmet for full effect)
+// 🌐 CORS — allow localhost + live site
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'https://dasilvaperfumes.com'],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'https://dasilvaperfumes.com',
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   })
 );
 
-// ✅ Handle preflight requests for all routes
+// ✅ Preflight requests
 app.options('*', cors());
-
 
 // 🔐 Security Middleware
 app.use(helmet());
 app.use(mongoSanitize());
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per window
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
   })
 );
 
+// 📦 JSON Parser
+app.use(express.json());
+
 // 📦 Routes
 app.use('/api/orders', orderRoutes);
-app.use('/api/products', productRoutes); // ✅ NEW: Product route added
+app.use('/api/products', productRoutes);
 
 // 🔌 Database Connection
 mongoose
