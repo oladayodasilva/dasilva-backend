@@ -23,6 +23,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// ✅ Tell Express it’s behind a proxy (important on Render/Heroku)
+app.set("trust proxy", 1);
+
 // 🌐 Serve /uploads folder with CORS headers
 app.use(
   "/uploads",
